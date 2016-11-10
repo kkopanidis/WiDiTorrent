@@ -5,16 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.asoee.widitorrent.dummy.DummyContent.DummyItem;
-
 import java.util.List;
 
 public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private final List<Object> mValues;
     private final OnListInteractionListener mListener;
 
-    public MyFileViewAdapter(List<DummyItem> items, OnListInteractionListener listener) {
+    public MyFileViewAdapter(List<Object> items, OnListInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -49,7 +47,7 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public DummyItem mItem;
+        public Object mItem;
 
         public ViewHolder(View view) {
             super(view);

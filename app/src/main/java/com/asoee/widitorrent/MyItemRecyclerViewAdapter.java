@@ -4,16 +4,17 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.asoee.widitorrent.dummy.DummyContent.DummyItem;
+
+import com.peak.salut.SalutDevice;
 
 import java.util.List;
 
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private final List<SalutDevice> mValues;
     private final OnListInteractionListener mListener;
 
-    public MyItemRecyclerViewAdapter(List<DummyItem> items, OnListInteractionListener listener) {
+    public MyItemRecyclerViewAdapter(List<SalutDevice> items, OnListInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -48,7 +49,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public DummyItem mItem;
+        public SalutDevice mItem;
 
         public ViewHolder(View view) {
             super(view);
