@@ -22,6 +22,7 @@ import com.peak.salut.SalutServiceData;
 public class MainActivity extends AppCompatActivity implements OnListInteractionListener, View.OnClickListener {
 
     public static Salut network;
+    public static ProcessManager mManager;
     MyItemRecyclerViewAdapter adapter;
 
     @Override
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
         //Salut Config here
         //Will trigger the data received callback
         SalutDataReceiver dataReceiver = new SalutDataReceiver(this, new SalutDataRec());
+
         //Contains the instance name
         SalutServiceData serviceData = new SalutServiceData("Download", 50489, "Instance1");
 
@@ -55,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                 Log.e("Error:", "Sorry, but this device does not support WiFi Direct.");
             }
         });
+
+
         network.discoverNetworkServices(new SalutDeviceCallback() {
             @Override
             public void call(SalutDevice salutDevice) {
@@ -72,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
         network.registerWithHost((SalutDevice) b, new SalutCallback() {
             @Override
             public void call() {
+                mManager = new ClientProcess();
                 Log.d("Info", "We're now registered.");
                 //After register display the dialog asking abou the file
                 runOnUiThread(new Runnable() {
@@ -113,16 +118,15 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
             if (network.isDiscovering) {
                 network.stopServiceDiscovery(true);
             }
+
+            //TODO add toast here
             //If the device already IS a host
-            else if (network.isRunningAsHost) {
+            if (network.isRunningAsHost) {
                 return;
             }
-            network.startNetworkService(new SalutDeviceCallback() {
-                @Override
-                public void call(SalutDevice device) {
-                    Log.d("Connection info:", device.readableName + " has connected!");
-                }
-            });
+
+            mManager = new HostProcess();
+            network.startNetworkService((HostProcess) mManager);
         }
     }
 }

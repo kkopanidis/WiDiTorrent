@@ -8,5 +8,6 @@ public class SalutDataRec implements SalutDataCallback {
     @Override
     public void onDataReceived(Object o) {
 
+
     }
 }

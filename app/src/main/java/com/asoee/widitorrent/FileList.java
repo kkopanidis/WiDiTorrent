@@ -19,7 +19,7 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.file_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-        recyclerView.setAdapter(new MyFileViewAdapter(new ArrayList<Object>(), this));
+        recyclerView.setAdapter(new MyFileViewAdapter(new ArrayList<>(), this));
 
     }
 
