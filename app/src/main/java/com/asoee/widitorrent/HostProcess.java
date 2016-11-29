@@ -3,10 +3,10 @@ package com.asoee.widitorrent;
 import android.util.Log;
 
 import com.asoee.widitorrent.data.File;
+import com.asoee.widitorrent.data.RawData;
 import com.asoee.widitorrent.data.RequestList;
 import com.asoee.widitorrent.data.TransferObject;
 import com.bluelinelabs.logansquare.LoganSquare;
-import com.bluelinelabs.logansquare.typeconverters.StringBasedTypeConverter;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDeviceCallback;
 import com.peak.salut.Salut;
@@ -39,15 +39,30 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
         try {
             TransferObject newMessage =
                     LoganSquare.parse((String) data, TransferObject.class);
-            if(newMessage.objectType.equals("RequestList")){
-//                Object actual = LoganSquare.parse(newMessage, RequestList.class);
+
+            if (newMessage instanceof File) {
+                int i = list.fileList.indexOf(newMessage);
+                // NEW FILE REQUEST
+                if (i > -1) {
+                    if (list.fileList.get(i).downloaders.contains(
+                            ((File) newMessage).downloaders.get(0)))
+                        return;
+                    list.fileList.get(i).downloaders.addAll(((File) newMessage).downloaders);
+                } else {
+                    list.fileList.add((File) newMessage);
+
+                }
+            } else if (newMessage instanceof RawData) {
+                network.sendToAllDevices(newMessage, new SalutCallback() {
+                    @Override
+                    public void call() {
+                            //TODO later
+                    }
+                });
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        if (data instanceof File) {
-
         }
 
     }

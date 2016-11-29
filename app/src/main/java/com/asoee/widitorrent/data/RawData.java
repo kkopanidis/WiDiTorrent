@@ -4,9 +4,14 @@ import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
 
 @JsonObject
-public abstract class TransferObject {
+public class RawData extends TransferObject {
 
     @JsonField
-    public String objectType;
+    String base64Data;
 
+    @JsonField
+    public String url;
+
+    @JsonField
+    String hashData;
 }

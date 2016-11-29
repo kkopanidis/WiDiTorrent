@@ -11,12 +11,13 @@ public class File extends TransferObject {
 
     @JsonField
     String url;
+
     @JsonField
-    List<String> downloaders;
+    public List<String> downloaders;
 
-    {
-        this.objectType = this.getClass().toString();
+
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof File) && this.url.equals(((File) o).url);
     }
-
-
 }
