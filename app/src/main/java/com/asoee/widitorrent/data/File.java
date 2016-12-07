@@ -15,9 +15,12 @@ public class File extends TransferObject {
     @JsonField
     public List<String> downloaders;
 
+    public int size;
 
     @Override
     public boolean equals(Object o) {
         return (o instanceof File) && this.url.equals(((File) o).url);
     }
+
+
 }

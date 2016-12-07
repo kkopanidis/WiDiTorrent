@@ -15,7 +15,8 @@
         tools:listitem="@layout/file_item_layout"
         android:layout_height="200dp"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:scrollbars="horizontal|vertical" />
 
     <TextView
         android:text="4:50"

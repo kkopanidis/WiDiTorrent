@@ -71,12 +71,13 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
     }
 
     @Override
-    public void onListInteraction(Object b) {
+    public void onListInteraction(Object b) { //---> otan klikareis tn lista prospa8eis na sinde8eis se kapoia omada
         //Register on the selected network
         network.registerWithHost((SalutDevice) b, new SalutCallback() {
             @Override
             public void call() {
                 mManager = new ClientProcess();
+                ((ClientProcess)mManager).checkSpeed();
                 Log.d("Info", "We're now registered.");
                 //After register display the dialog asking abou the file
                 runOnUiThread(new Runnable() {
@@ -127,6 +128,9 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
 
             mManager = new HostProcess();
             network.startNetworkService((HostProcess) mManager);
+
+            //---> den eimai sigouri an ananewnetai i lista
+
         }
     }
 }

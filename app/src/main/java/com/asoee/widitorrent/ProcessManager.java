@@ -6,5 +6,4 @@ public interface ProcessManager {
     void receive(Object data);
 
     void respond(Object data);
-
 }

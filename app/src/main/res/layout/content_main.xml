@@ -13,6 +13,7 @@
     app:layoutManager="LinearLayoutManager"
     tools:context="com.asoee.widitorrent.MainActivity"
     tools:showIn="@layout/activity_main"
-    tools:listitem="@layout/group_item_layout">
+    tools:listitem="@layout/group_item_layout"
+    android:scrollbars="horizontal|vertical">
 
 </android.support.v7.widget.RecyclerView>
