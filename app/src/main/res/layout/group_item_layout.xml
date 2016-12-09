@@ -20,7 +20,7 @@
         android:layout_weight="0.04" />
 
     <TextView
-        android:text="5"
+        android:text="0"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:id="@+id/part_no"

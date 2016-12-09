@@ -14,7 +14,7 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file_list);
-        // Set the adapter
+        // Set the group_list
         Context context = findViewById(R.id.file_list).getContext();
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.file_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -7,47 +8,46 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
-            android:text="GroupName"
+        <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="17dp"
-            android:id="@+id/textView5"
-            android:textAppearance="@style/TextAppearance.AppCompat"
-            android:layout_alignBaseline="@+id/editText3"
-            android:layout_alignBottom="@+id/editText3"
-            android:layout_alignParentStart="true" />
+            android:inputType="text|textPersonName"
+            android:text="Group name:"
+            android:ems="10"
+            android:id="@+id/group_prompt"
+            android:textAllCaps="true"
+            android:textSize="24sp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="122dp" />
 
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:inputType="textPersonName"
-            android:text="Enter group name"
             android:ems="10"
-            android:layout_marginTop="123dp"
-            android:id="@+id/editText3"
-            android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/textView5"
-            android:layout_marginStart="32dp" />
+            android:id="@+id/groupField"
+            android:layout_marginTop="28dp"
+            android:layout_below="@+id/group_prompt"
+            android:layout_alignParentStart="true"
+            android:hint="enter group name" />
 
         <Button
             android:text="OK"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="45dp"
-            android:id="@+id/button2"
-            android:layout_below="@+id/editText3"
-            android:layout_alignStart="@+id/textView5"
-            android:layout_marginStart="51dp" />
+            android:layout_below="@+id/groupField"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="59dp"
+            android:layout_marginTop="20dp"
+            android:id="@+id/okBttn" />
 
         <Button
             android:text="CANCEL"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="38dp"
-            android:id="@+id/button3"
-            android:layout_alignBaseline="@+id/button2"
-            android:layout_alignBottom="@+id/button2"
-            android:layout_alignEnd="@+id/editText3" />
+            android:layout_alignBottom="@+id/okBttn"
+            android:layout_alignEnd="@+id/group_prompt"
+            android:id="@+id/cancelBttn" />
+
     </RelativeLayout>
 </LinearLayout>
