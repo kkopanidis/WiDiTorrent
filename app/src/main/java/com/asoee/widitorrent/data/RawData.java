@@ -7,7 +7,7 @@ import com.bluelinelabs.logansquare.annotation.JsonObject;
 public class RawData extends TransferObject {
 
     @JsonField
-    String base64Data;
+    public String base64Data;
 
     @JsonField
     public String url;

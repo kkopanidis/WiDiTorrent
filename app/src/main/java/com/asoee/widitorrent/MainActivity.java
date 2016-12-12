@@ -1,5 +1,6 @@
 package com.asoee.widitorrent;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
     public static ProcessManager mManager;
     MyItemRecyclerViewAdapter group_list;
     SalutDevice chosenGroup;
+    static Activity activity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         group_list = new MyItemRecyclerViewAdapter(NetDevices.ITEMS, this);
         recyclerView.setAdapter(group_list);
-
+        MainActivity.activity = this;
 
         //Salut Config here
         config_salut();
@@ -76,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
             public void call(SalutDevice salutDevice) {
                 Log.d("Connection info:", salutDevice.readableName + "found!");
                 NetDevices.addItem(salutDevice);
-                group_list.notifyDataSetChanged();
+                group_list.add(salutDevice);
             }
         }, true);
     }
@@ -85,12 +87,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
     public void onListInteraction(Object b) { //---> otan klikareis tn lista prospa8eis na sinde8eis se kapoia omada
 
         chosenGroup = (SalutDevice) b;
-
         verify_connection();
-
-        //TODO update list view
-
-
 
     }
 
@@ -107,9 +104,9 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
                         });
 
                 AlertDialog dialog = builder.create();
@@ -124,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
             @Override
             public void call() {
                 mManager = new ClientProcess();
-                ((ClientProcess)mManager).checkSpeed();
+                ((ClientProcess) mManager).checkSpeed();
                 Log.d("Info", "We're now registered.");
                 ask_for_file();
             }

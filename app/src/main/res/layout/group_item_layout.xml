@@ -11,19 +11,4 @@
         android:layout_weight="0.04"
         android:gravity="center_vertical|center_horizontal" />
 
-    <TextView
-        android:text="Participants:"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:id="@+id/textView2"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_weight="0.04" />
-
-    <TextView
-        android:text="0"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:id="@+id/part_no"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_weight="0.04" />
 </LinearLayout>

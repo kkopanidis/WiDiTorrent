@@ -5,14 +5,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.asoee.widitorrent.data.File;
+import com.peak.salut.SalutDevice;
+
 import java.util.List;
 
 public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.ViewHolder> {
 
-    private final List<Object> mValues;
+    private final List<File> mValues;
+
     private final OnListInteractionListener mListener;
 
-    public MyFileViewAdapter(List<Object> items, OnListInteractionListener listener) {
+    public MyFileViewAdapter(List<File> items, OnListInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }

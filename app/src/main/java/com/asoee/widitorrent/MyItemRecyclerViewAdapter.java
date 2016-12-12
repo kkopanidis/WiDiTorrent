@@ -19,8 +19,9 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         mListener = listener;
     }
 
-    public void add(SalutDevice new_owner){
+    public void add(SalutDevice new_owner) {
         mValues.add(new_owner);
+        notifyDataSetChanged();
     }
 
     @Override

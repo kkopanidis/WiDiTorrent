@@ -10,7 +10,7 @@ import java.util.List;
 public class File extends TransferObject {
 
     @JsonField
-    String url;
+    public String url;
 
     @JsonField
     public List<String> downloaders;
