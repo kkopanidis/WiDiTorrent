@@ -6,18 +6,20 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.asoee.widitorrent.data.File;
+import com.asoee.widitorrent.data.RequestList;
 import com.peak.salut.SalutDevice;
 
 import java.util.List;
 
 public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.ViewHolder> {
 
-    private final List<File> mValues;
+    private final RequestList mValues;
 
     private final OnListInteractionListener mListener;
 
     public MyFileViewAdapter(List<File> items, OnListInteractionListener listener) {
-        mValues = items;
+        mValues = new RequestList();
+        mValues.fileList = items;
         mListener = listener;
     }
 
@@ -30,7 +32,7 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.mItem = mValues.get(position);
+        holder.mItem = mValues.fileList.get(position);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,7 +48,17 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
 
     @Override
     public int getItemCount() {
-        return mValues.size();
+        return mValues.fileList.size();
+    }
+
+    public void refreshList(File f) {
+        mValues.fileList.add(f);
+        notifyDataSetChanged();
+
+    }
+
+    public RequestList getList() {
+        return mValues;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

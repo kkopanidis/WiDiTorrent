@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.asoee.widitorrent.data.File;
+import com.asoee.widitorrent.data.RequestList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,8 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
 
     public static RecyclerView recyclerView;
     public static OnListInteractionListener listener;
+    public static MyFileViewAdapter list_adapter;
+    public static List<File> want = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,16 +29,23 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
         recyclerView = (RecyclerView) findViewById(R.id.file_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         listener = this;
-        recyclerView.setAdapter(new MyFileViewAdapter(new ArrayList<File>(), listener));
+        list_adapter = new MyFileViewAdapter(new ArrayList<File>(), listener);
+        recyclerView.setAdapter(list_adapter);
     }
 
 
-    public static void refreshList(List<File> files){
-        recyclerView.setAdapter(new MyFileViewAdapter(files, listener));
+    public static void refreshList(File file){
+        list_adapter.refreshList(file);
     }
 
     @Override
     public void onListInteraction(Object b) {
+        //---> oti kaneis tik prepei na mpei sto want enw oti kaneis untik prepei na vgei apo to want
+    }
 
+    public static void refreshList(List<File> fileList) {
+        for(File f : fileList){
+            list_adapter.refreshList(f);
+        }
     }
 }

@@ -27,17 +27,15 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
     List<SalutDevice> deviceList = new ArrayList<>(); //registeredDevices
     List<ConnectionSpeed> speeds = new ArrayList<>();
     Map<String, SalutDevice> deviceMap = new HashMap<>();
-    RequestList list;
+
     private Salut network;
 
     {
-        list = new RequestList();
-        list.fileList = new ArrayList<>();
         network = MainActivity.network;
     }
 
 
-    //TODO
+    //TODO ---> i receive object prepei na trexei kapws sinexeia..sto background..auto ginetai tr??
     @Override
     public void receive(Object data) {
 
@@ -46,17 +44,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
                     LoganSquare.parse((String) data, TransferObject.class);
 
             if (newMessage instanceof File) {
-                int i = list.fileList.indexOf(newMessage);
-                // NEW FILE REQUEST
-                if (i > -1) {
-                    if (list.fileList.get(i).downloaders.contains(
-                            ((File) newMessage).downloaders.get(0)))
-                        return;
-                    list.fileList.get(i).downloaders.addAll(((File) newMessage).downloaders);
-                } else {
-                    list.fileList.add((File) newMessage);
-
-                }
+                FileList.refreshList((File)newMessage);
             } else if (newMessage instanceof RawData) {
                 network.sendToAllDevices(newMessage, new SalutCallback() {
                     @Override
@@ -105,7 +93,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
 
     private void sendInfo(SalutDevice device) {
 
-        network.sendToDevice(device, list, new SalutCallback() {
+        network.sendToDevice(device, FileList.list_adapter.getList(), new SalutCallback() {
             @Override
             public void call() {
                 Log.d("Error:", "Failed to send data!");
@@ -116,7 +104,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
     // it will be called when the host has locked the group and only after all devices ready or timeout happens
     public void startDownload(){
         //sorts with descending order file list based on the size of each file
-        Collections.sort(list.fileList, new Comparator<File>() {
+        Collections.sort(FileList.list_adapter.getList().fileList, new Comparator<File>() {
             @Override
             public int compare(File lhs, File rhs) {
                 if( lhs.size == rhs.size){
@@ -146,7 +134,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
         //cycles on devices and asks them to download files.
         // //---->Not very efficient we should try something else
         int dev = 0;
-        for(File f : list.fileList){
+        for(File f : FileList.list_adapter.getList().fileList){
             network.sendToDevice(deviceMap.get(speeds.get(dev).name), f, new SalutCallback() {
                 @Override
                 public void call() {

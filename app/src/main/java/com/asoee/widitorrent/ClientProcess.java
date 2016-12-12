@@ -18,19 +18,20 @@ import com.asoee.widitorrent.utils.InputStreamVolleyRequest;
 import com.bluelinelabs.logansquare.LoganSquare;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
+import com.peak.salut.SalutDevice;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ClientProcess implements ProcessManager {
 
     Salut network = MainActivity.network;
     RequestQueue queue;
     List<String> have = new ArrayList<>();
-    List<File> want = new ArrayList<>();
     static RequestList list;
 
     @Override
@@ -43,27 +44,21 @@ public class ClientProcess implements ProcessManager {
             e.printStackTrace();
         } finally {
             if (newMessage instanceof RequestList) {
-                //TODO ---> mallon xreiazetai mono gia na ta kaneis display stn o8oni????
                 list = (RequestList) newMessage;
                 FileList.refreshList(((RequestList) newMessage).fileList);
-                want = new ArrayList<>();
-                for (File file : list.fileList) {
-                    for (String down : file.downloaders) {
-                        if (down.equals(network.thisDevice.readableName)) {
-                            want.add(file);
-                        }
-                    }
-                }
             } else if (newMessage instanceof File) {
                 download((File) newMessage);
             } else if (newMessage instanceof RawData) {
 
                 boolean found = false;
-                if (want.contains(((RawData) newMessage).url)
+                if (FileList.want.contains(((RawData) newMessage).url)
                         && !have.contains(((RawData) newMessage).url))
                     writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
                             ((RawData) newMessage).url);
 
+            } else if (newMessage instanceof Map){ //---> OTAN O HOST KANEI REFRESH ROUTING STELNEI TO
+                //DEVICE MAP. DN 3ERW KI OUTE MPORW NA SKEFTW AN KAI POY XREIAZETAI...
+                //TODO
             }
         }
     }
@@ -74,7 +69,6 @@ public class ClientProcess implements ProcessManager {
     }
 
     public void checkSpeed() {
-        //TODO --->vres to speed s apo tn server kai dimiourgise to Connection speed
         queue = Volley.newRequestQueue(MainActivity.activity);
         final Long time = System.currentTimeMillis();
         InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.GET,
@@ -116,10 +110,6 @@ public class ClientProcess implements ProcessManager {
     }
 
     private void download(final File file) {
-
-        //TODO download the file based on the url specified in file parameter
-
-        //TODO sed the raw data to host
         InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.GET, file.url,
                 new Response.Listener<byte[]>() {
                     @Override
@@ -127,7 +117,7 @@ public class ClientProcess implements ProcessManager {
                         // TODO handle the response
                         if (response != null) {
                             writeFile(response, file.url);
-                            sendFile(file.url);
+                            forwardFile(file.url);
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -160,7 +150,7 @@ public class ClientProcess implements ProcessManager {
 
     }
 
-    private void sendFile(String name) {
+    private void forwardFile(String name) {
         FileInputStream inputStream;
         RawData data = new RawData();
         try {

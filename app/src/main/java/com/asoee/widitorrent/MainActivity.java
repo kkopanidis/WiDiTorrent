@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -140,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                 ((ClientProcess) mManager).checkSpeed();
                 Log.d("Info", "We're now registered.");
                 ask_for_file();
+                show_group();
+
             }
         }, new SalutCallback() {
             @Override
@@ -209,8 +212,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
 
                         // this node is now host
                         become_host();
-                        //-->
-                        //TODO redirect to some other view maybe or not
+
                     }
                 });
                 diag.findViewById(R.id.cancelBttn).setOnClickListener(new View.OnClickListener() {
@@ -232,7 +234,14 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
 
         mManager = new HostProcess();
         network.startNetworkService((HostProcess) mManager);
+        show_group();
     }
 
+    //---> mas paei sto allo activity eite otan ginomaste host (meta tin become host) eite otan
+    // ginomaste clients (meta tn connect to group). O kwdikas autos 8a mporouse na mpei kai allou...an 8es alla3e ton
+    private void show_group(){
+        Intent intent = new Intent(MainActivity.this, FileList.class);
+        startActivity(intent);
+    }
 
 }
