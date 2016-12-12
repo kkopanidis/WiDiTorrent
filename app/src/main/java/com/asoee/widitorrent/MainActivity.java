@@ -72,7 +72,14 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
             }
         });
 
-
+        //----> To provlima edw einai oti pairneis salutDevice kai oxi onoma group pou 8es gia
+        // to view. Opote an dn iparxei kapoios allos tropos 8a mporousame opws anakaliptoume
+        // tous hosts na stenloume ena minima "Hello" pou otan to lavoun mas apantane me stoixeia
+        // opws to onoma tou group, o ari8mos twn participants isws ta arxeia pou 8elei pros t paron
+        // to group na katevasei i kapoia alli pliroforia pou na mas voi8isei na epile3oume group
+        // (px kati pou 8a mporousame  na exoume ws kritirio 8a itan i diametros tou group.. 8ewritika
+        // groups me mikroteri diametro kai konta s kai me sinolika kalo speed einai pi8ano na
+        // na einai taxitera sto katevasma - mpla mpla mpla mpla mpla mpla..)
         network.discoverNetworkServices(new SalutDeviceCallback() {
             @Override
             public void call(SalutDevice salutDevice) {
@@ -80,17 +87,22 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                 NetDevices.addItem(salutDevice);
                 group_list.add(salutDevice);
             }
-        }, true);
+        }, true); //----> genika gia na stamatisei auto prepei na ginei stopServiceDiscovery() i na
+        // tou oriseis sigkekrimeno timeout me tn discoverNetworkServicesWithTimeout(). 8ewritika oso
+        // eimaste sto kentriko view 8eloume na enimerwnomaste gia nea groups isws mexri kapoio orio
+        // enw otan feugoume 8a prepei na ginetai stop. an teleiwsoume to katevasma kai epistrepsoume
+        // pisw 8a prepei na 3anaarxizei discovery
     }
 
     @Override
-    public void onListInteraction(Object b) { //---> otan klikareis tn lista prospa8eis na sinde8eis se kapoia omada
+    public void onListInteraction(Object b) {
 
         chosenGroup = (SalutDevice) b;
         verify_connection();
 
     }
 
+    // this prompts you to verify that you actually want to connect to the chosen group
     private void verify_connection() {
         runOnUiThread(new Runnable() {
             @Override
@@ -105,16 +117,20 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
+                                chosenGroup = null;
                                 dialog.cancel();
                             }
                         });
 
                 AlertDialog dialog = builder.create();
-                dialog.show(); //---> den eimai sigouri an xreiazetai
+                dialog.show();
             }
         });
     }
 
+    // connects your device to the chosen group.
+    // after connecting, your device becomes a client of the group
+    // and informs its owner about its speed
     private void connect_to_group() {
         //Register on the selected network
         network.registerWithHost(chosenGroup, new SalutCallback() {
@@ -134,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
     }
 
 
+    // prompts you to enter the url of a file you want to download
     private void ask_for_file() {
         //After register display the dialog asking abou the file
         runOnUiThread(new Runnable() {
@@ -173,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
         }
     }
 
+    // prompts you to enter a name for the group you want to create
     private void ask_group_name() {
 
         runOnUiThread(new Runnable() {
@@ -186,12 +204,12 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                         // get the input and set it as group name
                         String group_name = ((TextView) findViewById(R.id.groupField)).getText().toString();
 
-                        // create the group / update groups' list
-
+                        //--> logika molis gineis host osoi kanoun discovery se vriskoun amesws
+                        // kai mporoun na sinde8oun
 
                         // this node is now host
                         become_host();
-
+                        //-->
                         //TODO redirect to some other view maybe or not
                     }
                 });
