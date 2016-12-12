@@ -19,7 +19,10 @@ public class File extends TransferObject {
 
     @Override
     public boolean equals(Object o) {
-        return (o instanceof File) && this.url.equals(((File) o).url);
+        if (o instanceof String) {
+            return url.equals(o);
+        } else
+            return (o instanceof File) && this.url.equals(((File) o).url);
     }
 
 

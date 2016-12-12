@@ -3,13 +3,11 @@ package com.asoee.widitorrent;
 import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.Volley;
 import com.asoee.widitorrent.data.ConnectionSpeed;
 import com.asoee.widitorrent.data.File;
@@ -22,7 +20,6 @@ import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,9 +27,10 @@ import java.util.List;
 
 public class ClientProcess implements ProcessManager {
 
-    Salut newtwork = MainActivity.network;
+    Salut network = MainActivity.network;
     RequestQueue queue;
-    List<File> have = new ArrayList<>();
+    List<String> have = new ArrayList<>();
+    List<File> want = new ArrayList<>();
     static RequestList list;
 
     @Override
@@ -48,21 +46,24 @@ public class ClientProcess implements ProcessManager {
                 //TODO ---> mallon xreiazetai mono gia na ta kaneis display stn o8oni????
                 list = (RequestList) newMessage;
                 FileList.refreshList(((RequestList) newMessage).fileList);
+                want = new ArrayList<>();
+                for (File file : list.fileList) {
+                    for (String down : file.downloaders) {
+                        if (down.equals(network.thisDevice.readableName)) {
+                            want.add(file);
+                        }
+                    }
+                }
             } else if (newMessage instanceof File) {
                 download((File) newMessage);
             } else if (newMessage instanceof RawData) {
 
                 boolean found = false;
-                for (File has : have) {
-                    if (((RawData) newMessage).url.equals(has.url)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
+                if (want.contains(((RawData) newMessage).url)
+                        && !have.contains(((RawData) newMessage).url))
                     writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
                             ((RawData) newMessage).url);
-                }
+
             }
         }
     }
@@ -85,10 +86,10 @@ public class ClientProcess implements ProcessManager {
                         try {
                             if (response != null) {
                                 ConnectionSpeed speed = new ConnectionSpeed();
-                                speed.name = newtwork.thisDevice.readableName;
+                                speed.name = network.thisDevice.readableName;
                                 speed.speed = 5 * 8 / (System.currentTimeMillis() - time);
 
-                                newtwork.sendToHost(speed, new SalutCallback() {
+                                network.sendToHost(speed, new SalutCallback() {
                                     @Override
                                     public void call() {
                                         Log.d("Info", "We failed to send speed.");
@@ -115,7 +116,7 @@ public class ClientProcess implements ProcessManager {
     }
 
     private void download(final File file) {
-        have.add(file);
+
         //TODO download the file based on the url specified in file parameter
 
         //TODO sed the raw data to host
@@ -142,6 +143,7 @@ public class ClientProcess implements ProcessManager {
 
 
     private boolean writeFile(byte[] data, String name) {
+        have.add(name);
         FileOutputStream outputStream;
         boolean written = false;
         try {
