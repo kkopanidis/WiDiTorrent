@@ -14,11 +14,11 @@ import com.asoee.widitorrent.data.File;
 import com.asoee.widitorrent.data.RawData;
 import com.asoee.widitorrent.data.RequestList;
 import com.asoee.widitorrent.data.TransferObject;
+import com.asoee.widitorrent.utils.Callback;
 import com.asoee.widitorrent.utils.InputStreamVolleyRequest;
 import com.bluelinelabs.logansquare.LoganSquare;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
-import com.peak.salut.SalutDevice;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -39,7 +39,18 @@ public class ClientProcess implements ProcessManager {
         TransferObject newMessage =
                 null;
         try {
-            newMessage = LoganSquare.parse((String) data, TransferObject.class);
+            if (((String) data).contains("speed"))
+                newMessage =
+                        LoganSquare.parse((String) data, ConnectionSpeed.class);
+            else if (((String) data).contains("fileList"))
+                newMessage =
+                        LoganSquare.parse((String) data, RequestList.class);
+            else if (((String) data).contains("url"))
+                newMessage =
+                        LoganSquare.parse((String) data, File.class);
+            else if (((String) data).contains("base64"))
+                newMessage =
+                        LoganSquare.parse((String) data, RawData.class);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -56,7 +67,7 @@ public class ClientProcess implements ProcessManager {
                     writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
                             ((RawData) newMessage).url);
 
-            } else if (newMessage instanceof Map){ //---> OTAN O HOST KANEI REFRESH ROUTING STELNEI TO
+            } else if (newMessage instanceof Map) { //---> OTAN O HOST KANEI REFRESH ROUTING STELNEI TO
                 //DEVICE MAP. DN 3ERW KI OUTE MPORW NA SKEFTW AN KAI POY XREIAZETAI...
                 //TODO
             }
@@ -68,7 +79,7 @@ public class ClientProcess implements ProcessManager {
 
     }
 
-    public void checkSpeed() {
+    public void checkSpeed(final Callback cb) {
         queue = Volley.newRequestQueue(MainActivity.activity);
         final Long time = System.currentTimeMillis();
         InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.GET,
@@ -81,19 +92,20 @@ public class ClientProcess implements ProcessManager {
                             if (response != null) {
                                 ConnectionSpeed speed = new ConnectionSpeed();
                                 speed.name = network.thisDevice.readableName;
-                                speed.speed = 5 * 8 / (System.currentTimeMillis() - time);
-
+                                speed.speed = (5 * 8) / ((System.currentTimeMillis() - time) / 1000);
                                 network.sendToHost(speed, new SalutCallback() {
                                     @Override
                                     public void call() {
                                         Log.d("Info", "We failed to send speed.");
                                     }
                                 });
+                                cb.done(true);
                             }
                         } catch (Exception e) {
                             // TODO Auto-generated catch block
                             Log.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
                             e.printStackTrace();
+                            cb.done(false);
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -102,11 +114,21 @@ public class ClientProcess implements ProcessManager {
             public void onErrorResponse(VolleyError error) {
                 // TODO handle the error
                 error.printStackTrace();
+                cb.done(false);
             }
         }, null);
         queue.add(request);
 
 
+    }
+
+    public void requestFile(File f) {
+        network.sendToHost(f, new SalutCallback() {
+            @Override
+            public void call() {
+                Log.d("Info", "We failed to send speed.");
+            }
+        });
     }
 
     private void download(final File file) {

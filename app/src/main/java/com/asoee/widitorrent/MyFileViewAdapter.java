@@ -4,10 +4,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.TextView;
 
 import com.asoee.widitorrent.data.File;
 import com.asoee.widitorrent.data.RequestList;
-import com.peak.salut.SalutDevice;
 
 import java.util.List;
 
@@ -33,7 +34,11 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.fileList.get(position);
-
+        ((TextView) holder.mView.findViewById(R.id.group_name)).setText(((File) holder.mItem).url);
+        ((TextView) holder.mView.findViewById(R.id.textView2))
+                .setText(((File) holder.mItem).downloaders.size() + "");
+        ((CheckBox) holder.mView.findViewById(R.id.checkBox))
+                .setChecked(((File) holder.mItem).downloaders.contains(MainActivity.network.thisDevice.readableName));
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -52,7 +57,13 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
     }
 
     public void refreshList(File f) {
-        mValues.fileList.add(f);
+        if (!mValues.fileList.contains(f)) {
+            mValues.fileList.add(f);
+        } else {
+            File f2 = mValues.fileList.get(mValues.fileList.indexOf(f));
+            f2.downloaders.addAll(f.downloaders);
+        }
+
         notifyDataSetChanged();
 
     }

@@ -2,6 +2,7 @@ package com.asoee.widitorrent;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,12 +17,15 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.asoee.widitorrent.net_devices.NetDevices;
+import com.asoee.widitorrent.utils.Callback;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDeviceCallback;
 import com.peak.salut.Salut;
 import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutDevice;
 import com.peak.salut.SalutServiceData;
+
+import java.util.Random;
 
 
 public class MainActivity extends AppCompatActivity implements OnListInteractionListener, View.OnClickListener {
@@ -58,10 +62,19 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
     private void config_salut() {
 
         //Will trigger the data received callback
-        SalutDataReceiver dataReceiver = new SalutDataReceiver(this, new SalutDataRec());
+        SalutDataReceiver dataReceiver = new SalutDataReceiver(this, new SalutDataRec() {
+            @Override
+            public void onDataReceived(Object o) {
+                if (mManager != null) {
+                    mManager.receive(o);
+                } else
+                    super.onDataReceived(o);
+            }
+        });
 
         //Contains the instance name
-        SalutServiceData serviceData = new SalutServiceData("Download", 50489, "Instance1");
+        SalutServiceData serviceData = new SalutServiceData("Download", 50489, "WiDi" + new Random()
+                .nextInt(256));
 
         //Instantiate the service
         network = new Salut(dataReceiver, serviceData, new SalutCallback() {
@@ -175,9 +188,20 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
             @Override
             public void call() {
                 mManager = new ClientProcess();
-                ((ClientProcess) mManager).checkSpeed();
+                final android.app.AlertDialog dialog = new ProgressDialog
+                        .Builder(MainActivity.this)
+                        .setTitle("Testing speed please wait..")
+                        .setCancelable(false)
+                        .create();
+                dialog.show();
+                ((ClientProcess) mManager).checkSpeed(new Callback() {
+                    @Override
+                    public void done(boolean res) {
+                        dialog.dismiss();
+                        ask_for_file();
+                    }
+                });
                 Log.d("Info", "We're now registered.");
-                ask_for_file();
 
 
             }

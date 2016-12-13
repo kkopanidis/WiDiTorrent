@@ -8,7 +8,6 @@ import com.asoee.widitorrent.data.RawData;
 import com.asoee.widitorrent.data.RequestList;
 import com.asoee.widitorrent.data.TransferObject;
 import com.bluelinelabs.logansquare.LoganSquare;
-import com.bluelinelabs.logansquare.typeconverters.DoubleBasedTypeConverter;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDeviceCallback;
 import com.peak.salut.Salut;
@@ -40,20 +39,38 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
     public void receive(Object data) {
 
         try {
-            TransferObject newMessage =
-                    LoganSquare.parse((String) data, TransferObject.class);
+            TransferObject newMessage = null;
+            if (((String) data).contains("speed"))
+                newMessage =
+                        LoganSquare.parse((String) data, ConnectionSpeed.class);
+            else if (((String) data).contains("fileList"))
+                newMessage =
+                        LoganSquare.parse((String) data, RequestList.class);
+            else if (((String) data).contains("url"))
+                newMessage =
+                        LoganSquare.parse((String) data, File.class);
+            else if (((String) data).contains("base64"))
+                newMessage =
+                        LoganSquare.parse((String) data, RawData.class);
 
             if (newMessage instanceof File) {
-                FileList.refreshList((File)newMessage);
+                FileList.refreshList((File) newMessage);
+                network.sendToAllDevices(((MyFileViewAdapter) FileList.recyclerView.getAdapter()).getList(), new SalutCallback() {
+                    @Override
+                    public void call() {
+                        Log.d("Error:", "Failed to send data!");
+                    }
+                });
             } else if (newMessage instanceof RawData) {
                 network.sendToAllDevices(newMessage, new SalutCallback() {
                     @Override
                     public void call() {
-                            //TODO later
+                        //TODO later
                     }
                 });
-            }else if (newMessage instanceof ConnectionSpeed){
+            } else if (newMessage instanceof ConnectionSpeed) {
                 speeds.add((ConnectionSpeed) newMessage);
+                FileList.refreshDeviceList(deviceList, speeds);
             }
 
         } catch (IOException e) {
@@ -64,6 +81,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
 
     @Override
     public void respond(Object data) {
+        System.out.println("Hey");
 
     }
 
@@ -76,6 +94,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
             deviceList.add(device);
             refreshRouting();
         }
+
 
         sendInfo(device);
     }
@@ -102,16 +121,16 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
     }
 
     // it will be called when the host has locked the group and only after all devices ready or timeout happens
-    public void startDownload(){
+    public void startDownload() {
         //sorts with descending order file list based on the size of each file
         Collections.sort(FileList.list_adapter.getList().fileList, new Comparator<File>() {
             @Override
             public int compare(File lhs, File rhs) {
-                if( lhs.size == rhs.size){
-                    return  0;
-                }else if (lhs.size > rhs.size){
+                if (lhs.size == rhs.size) {
+                    return 0;
+                } else if (lhs.size > rhs.size) {
                     return -1; //so as the order be descending
-                }else{
+                } else {
                     return 1;
                 }
             }
@@ -121,11 +140,11 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
         Collections.sort(speeds, new Comparator<ConnectionSpeed>() {
             @Override
             public int compare(ConnectionSpeed lhs, ConnectionSpeed rhs) {
-                if( lhs.speed == rhs.speed){
-                    return  0;
-                }else if (lhs.speed > rhs.speed){
+                if (lhs.speed == rhs.speed) {
+                    return 0;
+                } else if (lhs.speed > rhs.speed) {
                     return -1; //so as the order be descending
-                }else{
+                } else {
                     return 1;
                 }
             }
@@ -134,7 +153,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
         //cycles on devices and asks them to download files.
         // //---->Not very efficient we should try something else
         int dev = 0;
-        for(File f : FileList.list_adapter.getList().fileList){
+        for (File f : FileList.list_adapter.getList().fileList) {
             network.sendToDevice(deviceMap.get(speeds.get(dev).name), f, new SalutCallback() {
                 @Override
                 public void call() {
@@ -142,11 +161,9 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
                 }
             });
             dev++;
-            if(dev >= speeds.size()){
+            if (dev >= speeds.size()) {
                 dev = 0;
             }
         }
     }
-
-
 }
