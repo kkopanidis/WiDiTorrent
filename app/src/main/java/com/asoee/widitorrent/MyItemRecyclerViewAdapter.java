@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.peak.salut.SalutDevice;
 
@@ -19,8 +20,12 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         mListener = listener;
     }
 
-    public void add(SalutDevice new_owner) {
-        mValues.add(new_owner);
+    public void add() {
+//        for (SalutDevice device : mValues) {
+//            if (device.deviceName.equals(new_owner.deviceName))
+//                return;
+//        }
+//        mValues.add(new_owner);
         notifyDataSetChanged();
     }
 
@@ -34,7 +39,8 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-
+        ((TextView) holder.mView.findViewById(R.id.group_name))
+                .setText(holder.mItem.readableName + "");
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -59,6 +65,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         public ViewHolder(View view) {
             super(view);
             mView = view;
+
         }
     }
 }

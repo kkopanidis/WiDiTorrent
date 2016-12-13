@@ -30,6 +30,16 @@
         app:srcCompat="@android:drawable/ic_input_add"
         android:tint="@android:color/white"
         android:onClick="onClick" />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="78dp"
+        android:onClick="refresh"
+        android:layout_marginBottom="16dp"
+        app:srcCompat="@drawable/ic_action_name"
+        android:tint="@android:color/white" />
 
     <include layout="@layout/content_main" />
 

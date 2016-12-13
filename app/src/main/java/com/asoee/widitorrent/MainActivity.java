@@ -12,10 +12,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.asoee.widitorrent.net_devices.NetDevices;
 import com.peak.salut.Callbacks.SalutCallback;
@@ -86,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
             public void call(SalutDevice salutDevice) {
                 Log.d("Connection info:", salutDevice.readableName + "found!");
                 NetDevices.addItem(salutDevice);
-                group_list.add(salutDevice);
+                group_list.add();
             }
         }, true); //----> genika gia na stamatisei auto prepei na ginei stopServiceDiscovery() i na
         // tou oriseis sigkekrimeno timeout me tn discoverNetworkServicesWithTimeout(). 8ewritika oso
@@ -96,11 +94,50 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (!network.isDiscovering && !network.isRunningAsHost)
+            network.discoverNetworkServices(new SalutDeviceCallback() {
+                @Override
+                public void call(SalutDevice salutDevice) {
+                    Log.d("Connection info:", salutDevice.readableName + "found!");
+                    NetDevices.addItem(salutDevice);
+                    group_list.add();
+                }
+            }, true);
+
+    }
+
+    public void refresh(View v) {
+        NetDevices.ITEMS.clear();
+        NetDevices.ITEM_MAP.clear();
+        group_list.add();
+        network.stopServiceDiscovery(true);
+        network.discoverNetworkServices(new SalutDeviceCallback() {
+            @Override
+            public void call(SalutDevice salutDevice) {
+                Log.d("Connection info:", salutDevice.readableName + "found!");
+                NetDevices.addItem(salutDevice);
+                group_list.add();
+            }
+        }, true);
+    }
+
+    @Override
     public void onListInteraction(Object b) {
 
         chosenGroup = (SalutDevice) b;
         verify_connection();
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (network.isDiscovering)
+            network.stopServiceDiscovery(true);
+        if (network.isRunningAsHost)
+            network.stopNetworkService(false);
     }
 
     // this prompts you to verify that you actually want to connect to the chosen group
@@ -141,13 +178,17 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                 ((ClientProcess) mManager).checkSpeed();
                 Log.d("Info", "We're now registered.");
                 ask_for_file();
-                show_group();
+
 
             }
         }, new SalutCallback() {
             @Override
             public void call() {
                 Log.d("Info", "We failed to register.");
+                final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setMessage("Failed!");
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
         });
     }
@@ -165,12 +206,15 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                     @Override
                     public void onClick(View v) {
                         diag.hide();
+                        show_group(((EditText) diag.findViewById(R.id.file_select))
+                                .getText().toString());
                     }
                 });
                 diag.findViewById(R.id.button_skip).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         diag.hide();
+                        show_group(null);
                     }
                 });
                 diag.show();
@@ -205,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                     @Override
                     public void onClick(View v) {
                         // get the input and set it as group name
-                        String group_name = ((TextView) findViewById(R.id.groupField)).getText().toString();
+                        String group_name = ((EditText) diag.findViewById(R.id.groupField)).getText().toString();
 
                         //--> logika molis gineis host osoi kanoun discovery se vriskoun amesws
                         // kai mporoun na sinde8oun
@@ -234,13 +278,14 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
 
         mManager = new HostProcess();
         network.startNetworkService((HostProcess) mManager);
-        show_group();
+        show_group(null);
     }
 
     //---> mas paei sto allo activity eite otan ginomaste host (meta tin become host) eite otan
     // ginomaste clients (meta tn connect to group). O kwdikas autos 8a mporouse na mpei kai allou...an 8es alla3e ton
-    private void show_group(){
+    private void show_group(String url) {
         Intent intent = new Intent(MainActivity.this, FileList.class);
+        intent.putExtra("FileUrl", url);
         startActivity(intent);
     }
 
