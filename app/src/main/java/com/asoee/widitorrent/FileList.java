@@ -1,5 +1,6 @@
 package com.asoee.widitorrent;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +22,7 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
     public static MyFileViewAdapter list_adapter;
     public static DeviceAdapter list_adapter2;
     public static List<File> want = new ArrayList<>();
+    public static Activity fileList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,31 +41,46 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
         list_adapter2 = new DeviceAdapter(new ArrayList<SalutDevice>(), listener);
         recyclerView2.setAdapter(list_adapter2);
         String req = getIntent().getStringExtra("FileUrl");
+        fileList = this;
         if (req != null && req.length() != 0) {
             File tmp = new File();
             tmp.url = req;
             tmp.downloaders = new ArrayList<>();
             tmp.downloaders.add(MainActivity.network.thisDevice.readableName);
-            ((ClientProcess) MainActivity.mManager).requestFile(tmp);
+            Commons.requestFile(MainActivity.network, tmp);
         }
     }
 
 
-    public static void refreshList(File file) {
-        list_adapter.refreshList(file);
+    public static void refreshList(final File file) {
+        fileList.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                list_adapter.refreshList(file);
+            }
+        });
     }
 
-    public static void refreshDeviceList(List<SalutDevice> devices, List<ConnectionSpeed> speeds) {
-        recyclerView2.findViewById(R.id.device_list).setVisibility(View.VISIBLE);
-        list_adapter2.refreshList(devices, speeds);
+    public static void refreshDeviceList(final List<SalutDevice> devices, final List<ConnectionSpeed> speeds) {
+        fileList.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                recyclerView2.findViewById(R.id.device_list).setVisibility(View.VISIBLE);
+                list_adapter2.refreshList(devices, speeds);
+            }
+        });
+
     }
 
     @Override
     public void onListInteraction(Object b) {
         //---> oti kaneis tik prepei na mpei sto want enw oti kaneis untik prepei na vgei apo to want
+        Commons.requestFile(MainActivity.network, (File) b);
     }
 
     public static void refreshList(List<File> fileList) {
+        if (list_adapter == null)
+            return;
         for (File f : fileList) {
             list_adapter.refreshList(f);
         }

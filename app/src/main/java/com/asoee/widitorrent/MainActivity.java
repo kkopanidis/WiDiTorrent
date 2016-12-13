@@ -64,9 +64,15 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
         //Will trigger the data received callback
         SalutDataReceiver dataReceiver = new SalutDataReceiver(this, new SalutDataRec() {
             @Override
-            public void onDataReceived(Object o) {
+            public void onDataReceived(final Object o) {
                 if (mManager != null) {
-                    mManager.receive(o);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mManager.receive(o);
+                        }
+                    }).start();
+
                 } else
                     super.onDataReceived(o);
             }

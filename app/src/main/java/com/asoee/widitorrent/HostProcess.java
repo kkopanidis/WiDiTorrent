@@ -1,12 +1,12 @@
 package com.asoee.widitorrent;
 
+import android.util.Base64;
 import android.util.Log;
 
 import com.asoee.widitorrent.data.ConnectionSpeed;
 import com.asoee.widitorrent.data.File;
 import com.asoee.widitorrent.data.RawData;
 import com.asoee.widitorrent.data.RequestList;
-import com.asoee.widitorrent.data.TransferObject;
 import com.bluelinelabs.logansquare.LoganSquare;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDeviceCallback;
@@ -26,7 +26,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
     List<SalutDevice> deviceList = new ArrayList<>(); //registeredDevices
     List<ConnectionSpeed> speeds = new ArrayList<>();
     Map<String, SalutDevice> deviceMap = new HashMap<>();
-
+    List<String> have = new ArrayList<>();
     private Salut network;
 
     {
@@ -36,10 +36,10 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
 
     //TODO ---> i receive object prepei na trexei kapws sinexeia..sto background..auto ginetai tr??
     @Override
-    public void receive(Object data) {
+    synchronized public void receive(Object data) {
 
         try {
-            TransferObject newMessage = null;
+            Object newMessage = null;
             if (((String) data).contains("speed"))
                 newMessage =
                         LoganSquare.parse((String) data, ConnectionSpeed.class);
@@ -52,6 +52,8 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
             else if (((String) data).contains("base64"))
                 newMessage =
                         LoganSquare.parse((String) data, RawData.class);
+            else if (((String) data).contains("GO"))
+                newMessage = "GO";
 
             if (newMessage instanceof File) {
                 FileList.refreshList((File) newMessage);
@@ -68,10 +70,16 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
                         //TODO later
                     }
                 });
+                if (FileList.want.contains(((RawData) newMessage).url)
+                        && !have.contains(((RawData) newMessage).url))
+                    have.add(((RawData) newMessage).url);
+                Commons.writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
+                        ((RawData) newMessage).url);
             } else if (newMessage instanceof ConnectionSpeed) {
                 speeds.add((ConnectionSpeed) newMessage);
                 FileList.refreshDeviceList(deviceList, speeds);
-            }
+            } else if (newMessage instanceof String)
+                startDownload();
 
         } catch (IOException e) {
             e.printStackTrace();

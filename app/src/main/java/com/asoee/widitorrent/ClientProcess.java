@@ -1,6 +1,5 @@
 package com.asoee.widitorrent;
 
-import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 
@@ -21,7 +20,6 @@ import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +62,9 @@ public class ClientProcess implements ProcessManager {
                 boolean found = false;
                 if (FileList.want.contains(((RawData) newMessage).url)
                         && !have.contains(((RawData) newMessage).url))
-                    writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
-                            ((RawData) newMessage).url);
+                    have.add(((RawData) newMessage).url);
+                Commons.writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
+                        ((RawData) newMessage).url);
 
             } else if (newMessage instanceof Map) { //---> OTAN O HOST KANEI REFRESH ROUTING STELNEI TO
                 //DEVICE MAP. DN 3ERW KI OUTE MPORW NA SKEFTW AN KAI POY XREIAZETAI...
@@ -122,15 +121,6 @@ public class ClientProcess implements ProcessManager {
 
     }
 
-    public void requestFile(File f) {
-        network.sendToHost(f, new SalutCallback() {
-            @Override
-            public void call() {
-                Log.d("Info", "We failed to send speed.");
-            }
-        });
-    }
-
     private void download(final File file) {
         InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.GET, file.url,
                 new Response.Listener<byte[]>() {
@@ -138,7 +128,8 @@ public class ClientProcess implements ProcessManager {
                     public void onResponse(byte[] response) {
                         // TODO handle the response
                         if (response != null) {
-                            writeFile(response, file.url);
+                            have.add(file.url);
+                            Commons.writeFile(response, file.url);
                             forwardFile(file.url);
                         }
                     }
@@ -153,24 +144,6 @@ public class ClientProcess implements ProcessManager {
         queue.add(request);
     }
 
-
-    private boolean writeFile(byte[] data, String name) {
-        have.add(name);
-        FileOutputStream outputStream;
-        boolean written = false;
-        try {
-            outputStream = MainActivity.activity
-                    .openFileOutput(name, Context.MODE_PRIVATE);
-            outputStream.write(data);
-            outputStream.close();
-            written = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return written;
-
-
-    }
 
     private void forwardFile(String name) {
         FileInputStream inputStream;

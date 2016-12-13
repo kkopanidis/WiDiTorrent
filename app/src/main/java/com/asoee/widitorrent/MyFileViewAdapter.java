@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.asoee.widitorrent.data.File;
@@ -38,17 +39,24 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
         ((TextView) holder.mView.findViewById(R.id.textView2))
                 .setText(((File) holder.mItem).downloaders.size() + "");
         ((CheckBox) holder.mView.findViewById(R.id.checkBox))
-                .setChecked(((File) holder.mItem).downloaders.contains(MainActivity.network.thisDevice.readableName));
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-                    mListener.onListInteraction(holder.mItem);
-                }
-            }
-        });
+                .setChecked(((File) holder.mItem).downloaders
+                        .contains(MainActivity.network.thisDevice.readableName));
+        ((CheckBox) holder.mView.findViewById(R.id.checkBox))
+                .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        String name = MainActivity.network.thisDevice.readableName;
+                        if (isChecked) {
+                            if (!((File) holder.mItem).downloaders.contains(name))
+                                ((File) holder.mItem).downloaders.add(name);
+                            mListener.onListInteraction(holder.mItem);
+                        } else {
+                            ((File) holder.mItem).downloaders
+                                    .remove(name);
+                            mListener.onListInteraction(holder.mItem);
+                        }
+                    }
+                });
     }
 
     @Override
@@ -56,15 +64,22 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
         return mValues.fileList.size();
     }
 
-    public void refreshList(File f) {
+    public void refreshList(final File f) {
         if (!mValues.fileList.contains(f)) {
             mValues.fileList.add(f);
         } else {
             File f2 = mValues.fileList.get(mValues.fileList.indexOf(f));
-            f2.downloaders.addAll(f.downloaders);
+            for (String down : f.downloaders)
+                if (!f2.downloaders.contains(down))
+                    f2.downloaders.add(down);
         }
+        FileList.fileList.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
 
-        notifyDataSetChanged();
 
     }
 
