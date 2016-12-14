@@ -1,7 +1,9 @@
 package com.asoee.widitorrent;
 
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.asoee.widitorrent.data.ConnectionSpeed;
 import com.asoee.widitorrent.data.File;
@@ -43,27 +45,23 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
             if (((String) data).contains("speed"))
                 newMessage =
                         LoganSquare.parse((String) data, ConnectionSpeed.class);
+            else if (((String) data).contains("base64Data"))
+                newMessage =
+                        LoganSquare.parse((String) data, RawData.class);
             else if (((String) data).contains("fileList"))
                 newMessage =
                         LoganSquare.parse((String) data, RequestList.class);
             else if (((String) data).contains("url"))
                 newMessage =
                         LoganSquare.parse((String) data, File.class);
-            else if (((String) data).contains("base64"))
-                newMessage =
-                        LoganSquare.parse((String) data, RawData.class);
-            else if (((String) data).contains("GO"))
-                newMessage = "GO";
+
 
             if (newMessage instanceof File) {
                 FileList.refreshList((File) newMessage);
-                network.sendToAllDevices(((MyFileViewAdapter) FileList.recyclerView.getAdapter()).getList(), new SalutCallback() {
-                    @Override
-                    public void call() {
-                        Log.d("Error:", "Failed to send data!");
-                    }
-                });
+                Commons.requestFile(MainActivity.network, null);
             } else if (newMessage instanceof RawData) {
+                Looper.prepare();
+                Toast.makeText(FileList.fileList, "File data received", Toast.LENGTH_SHORT).show();
                 network.sendToAllDevices(newMessage, new SalutCallback() {
                     @Override
                     public void call() {
@@ -73,13 +71,13 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
                 if (FileList.want.contains(((RawData) newMessage).url)
                         && !have.contains(((RawData) newMessage).url))
                     have.add(((RawData) newMessage).url);
+                Toast.makeText(FileList.fileList, "File saved", Toast.LENGTH_SHORT).show();
                 Commons.writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
                         ((RawData) newMessage).url);
             } else if (newMessage instanceof ConnectionSpeed) {
                 speeds.add((ConnectionSpeed) newMessage);
                 FileList.refreshDeviceList(deviceList, speeds);
-            } else if (newMessage instanceof String)
-                startDownload();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -173,5 +171,14 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
                 dev = 0;
             }
         }
+    }
+
+    public void initiateProc() {
+        network.sendToAllDevices("GO", new SalutCallback() {
+            @Override
+            public void call() {
+                //TODO later
+            }
+        });
     }
 }

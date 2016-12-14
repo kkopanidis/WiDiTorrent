@@ -2,25 +2,35 @@ package com.asoee.widitorrent;
 
 
 import android.content.Context;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.asoee.widitorrent.data.File;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class Commons {
 
 
     public static void requestFile(Salut network, File f) {
-        network.sendToHost(f, new SalutCallback() {
-            @Override
-            public void call() {
-                Log.d("Info", "We failed to send speed.");
-            }
-        });
+        if (network.isRunningAsHost) {
+            network.sendToAllDevices(((MyFileViewAdapter) FileList.recyclerView.getAdapter())
+                    .getList(), new SalutCallback() {
+                @Override
+                public void call() {
+                    Log.d("Error:", "Failed to send data!");
+                }
+            });
+        } else
+            network.sendToHost(f, new SalutCallback() {
+                @Override
+                public void call() {
+                    Log.d("Info", "We failed to send speed.");
+                }
+            });
     }
 
     public static boolean writeFile(byte[] data, String name) {
@@ -28,12 +38,16 @@ public class Commons {
         FileOutputStream outputStream;
         boolean written = false;
         try {
+            name = name.replaceAll("/", "_");
             outputStream = MainActivity.activity
                     .openFileOutput(name, Context.MODE_PRIVATE);
             outputStream.write(data);
             outputStream.close();
             written = true;
-        } catch (IOException e) {
+
+            Looper.prepare();
+            Toast.makeText(FileList.fileList, "File saved to device", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return written;

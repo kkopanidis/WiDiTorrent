@@ -2,7 +2,9 @@ package com.asoee.widitorrent;
 
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -12,7 +14,6 @@ import com.asoee.widitorrent.data.ConnectionSpeed;
 import com.asoee.widitorrent.data.File;
 import com.asoee.widitorrent.data.RawData;
 import com.asoee.widitorrent.data.RequestList;
-import com.asoee.widitorrent.data.TransferObject;
 import com.asoee.widitorrent.utils.Callback;
 import com.asoee.widitorrent.utils.InputStreamVolleyRequest;
 import com.bluelinelabs.logansquare.LoganSquare;
@@ -31,24 +32,27 @@ public class ClientProcess implements ProcessManager {
     RequestQueue queue;
     List<String> have = new ArrayList<>();
     static RequestList list;
+    File mine;
 
     @Override
     public void receive(Object data) {
-        TransferObject newMessage =
+        Object newMessage =
                 null;
         try {
             if (((String) data).contains("speed"))
                 newMessage =
                         LoganSquare.parse((String) data, ConnectionSpeed.class);
+            else if (((String) data).contains("base64Data"))
+                newMessage =
+                        LoganSquare.parse((String) data, RawData.class);
             else if (((String) data).contains("fileList"))
                 newMessage =
                         LoganSquare.parse((String) data, RequestList.class);
             else if (((String) data).contains("url"))
                 newMessage =
                         LoganSquare.parse((String) data, File.class);
-            else if (((String) data).contains("base64"))
-                newMessage =
-                        LoganSquare.parse((String) data, RawData.class);
+            else if (((String) data).contains("GO"))
+                newMessage = "GO";
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -58,8 +62,8 @@ public class ClientProcess implements ProcessManager {
             } else if (newMessage instanceof File) {
                 download((File) newMessage);
             } else if (newMessage instanceof RawData) {
-
                 boolean found = false;
+                //TODO check it, it enters here while the file does exist
                 if (FileList.want.contains(((RawData) newMessage).url)
                         && !have.contains(((RawData) newMessage).url))
                     have.add(((RawData) newMessage).url);
@@ -69,6 +73,8 @@ public class ClientProcess implements ProcessManager {
             } else if (newMessage instanceof Map) { //---> OTAN O HOST KANEI REFRESH ROUTING STELNEI TO
                 //DEVICE MAP. DN 3ERW KI OUTE MPORW NA SKEFTW AN KAI POY XREIAZETAI...
                 //TODO
+            } else if (newMessage instanceof String) {
+                download(mine);
             }
         }
     }
@@ -116,6 +122,7 @@ public class ClientProcess implements ProcessManager {
                 cb.done(false);
             }
         }, null);
+        request.setRetryPolicy(new DefaultRetryPolicy(10000, 0, 0f));
         queue.add(request);
 
 
@@ -128,9 +135,11 @@ public class ClientProcess implements ProcessManager {
                     public void onResponse(byte[] response) {
                         // TODO handle the response
                         if (response != null) {
+                            Toast.makeText(FileList.fileList, "File downloaded", Toast.LENGTH_SHORT).show();
                             have.add(file.url);
                             Commons.writeFile(response, file.url);
                             forwardFile(file.url);
+
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -139,6 +148,7 @@ public class ClientProcess implements ProcessManager {
             public void onErrorResponse(VolleyError error) {
                 // TODO handle the error
                 error.printStackTrace();
+                Toast.makeText(FileList.fileList, "Error downloading", Toast.LENGTH_SHORT).show();
             }
         }, null);
         queue.add(request);
@@ -149,6 +159,8 @@ public class ClientProcess implements ProcessManager {
         FileInputStream inputStream;
         RawData data = new RawData();
         try {
+            String original = name;
+            name = name.replaceAll("/", "_");
             inputStream = MainActivity.activity
                     .openFileInput(name);
             int c;
@@ -162,6 +174,7 @@ public class ClientProcess implements ProcessManager {
                 array[i++] = b;
             }
             inputStream.close();
+            data.url = original;
             data.base64Data = Base64.encodeToString(array, Base64.DEFAULT);
             MainActivity.network.sendToHost(data, new SalutCallback() {
                 @Override
@@ -169,6 +182,7 @@ public class ClientProcess implements ProcessManager {
 
                 }
             });
+            Toast.makeText(FileList.fileList, "File sent to host!", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

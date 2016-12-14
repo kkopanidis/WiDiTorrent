@@ -2,7 +2,6 @@ package com.asoee.widitorrent.data;
 
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
-import com.peak.salut.SalutDevice;
 
 import java.util.List;
 
@@ -14,6 +13,8 @@ public class File extends TransferObject {
 
     @JsonField
     public List<String> downloaders;
+    @JsonField
+    public boolean removal;
 
     public int size;
 

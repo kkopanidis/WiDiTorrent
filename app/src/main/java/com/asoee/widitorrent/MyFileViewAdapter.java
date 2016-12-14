@@ -39,6 +39,8 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
         ((TextView) holder.mView.findViewById(R.id.textView2))
                 .setText(((File) holder.mItem).downloaders.size() + "");
         ((CheckBox) holder.mView.findViewById(R.id.checkBox))
+                .setOnCheckedChangeListener(null);
+        ((CheckBox) holder.mView.findViewById(R.id.checkBox))
                 .setChecked(((File) holder.mItem).downloaders
                         .contains(MainActivity.network.thisDevice.readableName));
         ((CheckBox) holder.mView.findViewById(R.id.checkBox))
@@ -49,11 +51,17 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
                         if (isChecked) {
                             if (!((File) holder.mItem).downloaders.contains(name))
                                 ((File) holder.mItem).downloaders.add(name);
+                            ((File) holder.mItem).removal = false;
                             mListener.onListInteraction(holder.mItem);
+                            if (MainActivity.network.isRunningAsHost)
+                                notifyDataSetChanged();
                         } else {
                             ((File) holder.mItem).downloaders
                                     .remove(name);
+                            ((File) holder.mItem).removal = true;
                             mListener.onListInteraction(holder.mItem);
+                            if (MainActivity.network.isRunningAsHost)
+                                notifyDataSetChanged();
                         }
                     }
                 });
@@ -64,14 +72,26 @@ public class MyFileViewAdapter extends RecyclerView.Adapter<MyFileViewAdapter.Vi
         return mValues.fileList.size();
     }
 
-    public void refreshList(final File f) {
-        if (!mValues.fileList.contains(f)) {
-            mValues.fileList.add(f);
-        } else {
+    synchronized public void refreshList(final File f) {
+        if (f.removal) {
+            if (!mValues.fileList.contains(f))
+                return;
             File f2 = mValues.fileList.get(mValues.fileList.indexOf(f));
-            for (String down : f.downloaders)
-                if (!f2.downloaders.contains(down))
-                    f2.downloaders.add(down);
+            for (String down : f2.downloaders)
+                if (!f.downloaders.contains(down))
+                    f2.downloaders.remove(down);
+        } else {
+            if (!mValues.fileList.contains(f)) {
+                mValues.fileList.add(f);
+            } else {
+                File f2 = mValues.fileList.get(mValues.fileList.indexOf(f));
+                if (f.downloaders == null) {
+                    f2.downloaders.clear();
+                } else
+                    for (String down : f.downloaders)
+                        if (!f2.downloaders.contains(down))
+                            f2.downloaders.add(down);
+            }
         }
         FileList.fileList.runOnUiThread(new Runnable() {
             @Override

@@ -43,10 +43,13 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
         String req = getIntent().getStringExtra("FileUrl");
         fileList = this;
         if (req != null && req.length() != 0) {
+
             File tmp = new File();
             tmp.url = req;
+            tmp.removal = false;
             tmp.downloaders = new ArrayList<>();
             tmp.downloaders.add(MainActivity.network.thisDevice.readableName);
+            ((ClientProcess) MainActivity.mManager).mine = tmp;
             Commons.requestFile(MainActivity.network, tmp);
         }
     }
@@ -72,8 +75,18 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
 
     }
 
+    public void onReady(View v) {
+        if (MainActivity.network.isRunningAsHost) {
+            ((HostProcess) MainActivity.mManager).initiateProc();
+        } else {
+
+        }
+    }
+
     @Override
     public void onListInteraction(Object b) {
+        if (!((File) b).removal)
+            want.add((File) b);
         //---> oti kaneis tik prepei na mpei sto want enw oti kaneis untik prepei na vgei apo to want
         Commons.requestFile(MainActivity.network, (File) b);
     }
