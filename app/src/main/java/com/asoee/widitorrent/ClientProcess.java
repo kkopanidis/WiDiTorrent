@@ -78,9 +78,7 @@ public class ClientProcess implements ProcessManager {
                     have.add(((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
                     Commons.writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
                             ((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
-                    handleParts(((RawData) newMessage).url,
-                            FileList.want.get(FileList.want.indexOf(((RawData) newMessage).url))
-                                    .downloaders.size());
+                    handleParts(((RawData) newMessage).url, map.size());
                 }
 
             } else if (newMessage instanceof Map) {
