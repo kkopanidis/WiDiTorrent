@@ -13,5 +13,8 @@ public class RawData extends TransferObject {
     public String url;
 
     @JsonField
+    public int part;
+
+    @JsonField
     String hashData;
 }

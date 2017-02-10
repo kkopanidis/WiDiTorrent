@@ -101,7 +101,6 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
             refreshRouting();
         }
 
-
         sendInfo(device);
     }
 
@@ -143,29 +142,33 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
         });
 
         //sorts devices in descending order based on their speed
-        Collections.sort(speeds, new Comparator<ConnectionSpeed>() {
-            @Override
-            public int compare(ConnectionSpeed lhs, ConnectionSpeed rhs) {
-                if (lhs.speed == rhs.speed) {
-                    return 0;
-                } else if (lhs.speed > rhs.speed) {
-                    return -1; //so as the order be descending
-                } else {
-                    return 1;
-                }
-            }
-        });
+//        Collections.sort(speeds, new Comparator<ConnectionSpeed>() {
+//            @Override
+//            public int compare(ConnectionSpeed lhs, ConnectionSpeed rhs) {
+//                if (lhs.speed == rhs.speed) {
+//                    return 0;
+//                } else if (lhs.speed > rhs.speed) {
+//                    return -1; //so as the order be descending
+//                } else {
+//                    return 1;
+//                }
+//            }
+//        });
 
         //cycles on devices and asks them to download files.
         // //---->Not very efficient we should try something else
         int dev = 0;
         for (File f : FileList.list_adapter.getList().fileList) {
-            network.sendToDevice(deviceMap.get(speeds.get(dev).name), f, new SalutCallback() {
-                @Override
-                public void call() {
-                    Log.e("Info", "Oh no! The data failed to send.");
-                }
-            });
+            f.part = 0;
+            for (SalutDevice device : deviceMap.values()) {
+                network.sendToDevice(device, f, new SalutCallback() {
+                    @Override
+                    public void call() {
+                        Log.e("Info", "Oh no! The data failed to send.");
+                    }
+                });
+                f.part++;
+            }
             dev++;
             if (dev >= speeds.size()) {
                 dev = 0;

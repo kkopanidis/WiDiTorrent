@@ -4,6 +4,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -17,12 +18,17 @@ import com.asoee.widitorrent.data.RequestList;
 import com.asoee.widitorrent.utils.Callback;
 import com.asoee.widitorrent.utils.InputStreamVolleyRequest;
 import com.bluelinelabs.logansquare.LoganSquare;
+import com.bluelinelabs.logansquare.internal.objectmappers.IntegerMapper;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +39,7 @@ public class ClientProcess implements ProcessManager {
     List<String> have = new ArrayList<>();
     static RequestList list;
     File mine;
+    Map<String, String> map = new HashMap<>();
 
     @Override
     public void receive(Object data) {
@@ -65,18 +72,81 @@ public class ClientProcess implements ProcessManager {
                 boolean found = false;
                 //TODO check it, it enters here while the file does exist
                 if (FileList.want.contains(((RawData) newMessage).url)
-                        && !have.contains(((RawData) newMessage).url))
-                    have.add(((RawData) newMessage).url);
-                Commons.writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
-                        ((RawData) newMessage).url);
+                        && (!have.contains(((RawData) newMessage).url + "_" + ((RawData) newMessage).part))
+                        || !have.contains(((RawData) newMessage).url)) {
 
-            } else if (newMessage instanceof Map) { //---> OTAN O HOST KANEI REFRESH ROUTING STELNEI TO
-                //DEVICE MAP. DN 3ERW KI OUTE MPORW NA SKEFTW AN KAI POY XREIAZETAI...
+                    have.add(((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
+                    Commons.writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
+                            ((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
+                    handleParts(((RawData) newMessage).url,
+                            FileList.want.get(FileList.want.indexOf(((RawData) newMessage).url))
+                                    .downloaders.size());
+                }
+
+            } else if (newMessage instanceof Map) {
                 //TODO
+                map.putAll((Map<? extends String, ? extends String>) newMessage);
             } else if (newMessage instanceof String) {
                 download(mine);
             }
         }
+    }
+
+
+    public void handleParts(String url, int total) {
+        String[] filenames = MainActivity.activity.getFilesDir().list();
+        List<String> files = new ArrayList<>();
+
+        for (String file : filenames) {
+            if (file.contains(url)) {
+                files.add(file);
+            }
+        }
+
+        if (files.size() != total) {
+            return;
+        }
+
+        Collections.sort(files, new Comparator<String>() {
+            @Override
+            public int compare(String lhs, String rhs) {
+                int partno1 = Integer.parseInt(lhs.substring(lhs.lastIndexOf('_')));
+                int partno2 = Integer.parseInt(rhs.substring(rhs.lastIndexOf('_')));
+
+                if (partno1 > partno2) {
+                    return -1; //so as the order be descending
+                } else {
+                    return 1;
+                }
+            }
+        });
+
+        List<Byte> bytes = new ArrayList<>();
+        int c;
+
+        for (String file : files) {
+
+            try (InputStream inputStream = MainActivity.activity
+                    .openFileInput(file)) {
+
+                while ((c = inputStream.read()) != -1) {
+                    bytes.add((byte) c);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+
+                MainActivity.activity.getApplicationContext().deleteFile(file);
+            }
+
+        }
+        byte[] array = new byte[bytes.size()];
+        int i = 0;
+        for (Byte b : bytes) {
+            array[i++] = b;
+        }
+        Commons.writeFile(array, url);
+        have.add(url);
     }
 
     @Override
@@ -137,7 +207,7 @@ public class ClientProcess implements ProcessManager {
                         if (response != null) {
                             Toast.makeText(FileList.fileList, "File downloaded", Toast.LENGTH_SHORT).show();
                             have.add(file.url);
-                            Commons.writeFile(response, file.url);
+                            Commons.writeFile(response, file.url + "_" + file.part);
                             forwardFile(file.url);
 
                         }
@@ -150,7 +220,19 @@ public class ClientProcess implements ProcessManager {
                 error.printStackTrace();
                 Toast.makeText(FileList.fileList, "Error downloading", Toast.LENGTH_SHORT).show();
             }
-        }, null);
+        }, null) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> map = new HashMap<>();
+                map.putAll(super.getHeaders());
+                map.put("part", String.valueOf(file.part));
+                map.put("total", String.valueOf(file.downloaders.size()));
+
+                return map;
+            }
+        };
+
         queue.add(request);
     }
 

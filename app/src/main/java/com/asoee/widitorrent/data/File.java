@@ -16,6 +16,9 @@ public class File extends TransferObject {
     @JsonField
     public boolean removal;
 
+    @JsonField
+    public int part;
+
     public int size;
 
     @Override
