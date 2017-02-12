@@ -38,7 +38,7 @@ public class Commons {
         FileOutputStream outputStream;
         boolean written = false;
         try {
-            name = name.replaceAll("/", "_");
+            name = normalizeName(name);
             outputStream = MainActivity.activity
                     .openFileOutput(name, Context.MODE_PRIVATE);
             outputStream.write(data);
@@ -53,5 +53,9 @@ public class Commons {
         return written;
 
 
+    }
+
+    public static String normalizeName(String name) {
+        return name.replaceAll("\\W", "_");
     }
 }

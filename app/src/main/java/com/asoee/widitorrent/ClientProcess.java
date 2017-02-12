@@ -153,7 +153,8 @@ public class ClientProcess implements ProcessManager {
                             forwardFile(file.url);
 
                             if (!FileList.want.contains(file.url)) {
-                                MainActivity.activity.getApplicationContext().deleteFile(file.url + "_" + file.part);
+                                MainActivity.activity.getApplicationContext()
+                                        .deleteFile(Commons.normalizeName(file.url) + "_" + file.part);
                             }
 
                         }
@@ -191,7 +192,7 @@ public class ClientProcess implements ProcessManager {
         RawData data = new RawData();
         try {
             String original = name;
-            name = name.replaceAll("/", "_");
+            name = Commons.normalizeName(name);
             inputStream = MainActivity.activity
                     .openFileInput(name);
             int c;

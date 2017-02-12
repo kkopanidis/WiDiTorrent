@@ -12,15 +12,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Created by gina4_000 on 12/2/2017.
- */
 
 public class FileManager {
 
 
-    public static boolean handleParts(String url, int total, Activity main ) {
+    public static boolean handleParts(String url, int total, Activity main) {
         String[] filenames = main.getFilesDir().list();
+        url = Commons.normalizeName(url);
         List<String> files = new ArrayList<>();
 
         for (String file : filenames) {
