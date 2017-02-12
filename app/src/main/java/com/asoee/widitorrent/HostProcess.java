@@ -214,8 +214,6 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
 //            }
 //        });
 
-        //cycles on devices and asks them to download files.
-        // //---->Not very efficient we should try something else
         int dev = 0;
         for (File f : FileList.list_adapter.getList().fileList) {
             f.part = 0;

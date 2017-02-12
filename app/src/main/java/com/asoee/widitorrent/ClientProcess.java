@@ -210,15 +210,16 @@ public class ClientProcess implements ProcessManager {
 
                         }
                     }
-                }, new Response.ErrorListener() {
+                },
+                new Response.ErrorListener() {
 
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                // TODO handle the error
-                error.printStackTrace();
-                Toast.makeText(FileList.fileList, "Error downloading", Toast.LENGTH_SHORT).show();
-            }
-        }, null) {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO handle the error
+                        error.printStackTrace();
+                        Toast.makeText(FileList.fileList, "Error downloading", Toast.LENGTH_SHORT).show();
+                    }
+                }, null) {
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
