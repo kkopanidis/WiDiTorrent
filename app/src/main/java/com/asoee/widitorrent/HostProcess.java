@@ -17,7 +17,6 @@ import com.peak.salut.Salut;
 import com.peak.salut.SalutDevice;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -88,24 +87,25 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
                 if (FileManager.handleParts(((RawData) newMessage).url, deviceList.size(), MainActivity.activity)) {
                     have.add(((RawData) newMessage).url);
                 }
+                int done = 0;
+                for (String file : fileStatus.keySet()) {
+                    if (fileStatus.get(file) == deviceList.size()) {
+                        done++;
+                    }
+                }
+                if (done == FileList.list_adapter.getList().fileList.size()) {
+                    network.sendToAllDevices("DONE", new SalutCallback() {
+                        @Override
+                        public void call() {
+                            //TODO later
+                        }
+                    });
+                }
             } else if (newMessage instanceof ConnectionSpeed) {
                 speeds.add((ConnectionSpeed) newMessage);
                 FileList.refreshDeviceList(deviceList, speeds);
             }
-            int done = 0;
-            for (String file : fileStatus.keySet()) {
-                if (fileStatus.get(file) == deviceList.size()) {
-                    done++;
-                }
-            }
-            if (done == FileList.list_adapter.getList().fileList.size()) {
-                network.sendToAllDevices("DONE", new SalutCallback() {
-                    @Override
-                    public void call() {
-                        //TODO later
-                    }
-                });
-            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }

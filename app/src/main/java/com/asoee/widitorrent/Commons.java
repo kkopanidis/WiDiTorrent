@@ -2,7 +2,6 @@ package com.asoee.widitorrent;
 
 
 import android.content.Context;
-import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -44,8 +43,7 @@ public class Commons {
             outputStream.write(data);
             outputStream.close();
             written = true;
-
-            Looper.prepare();
+            
             Toast.makeText(FileList.fileList, "File saved to device", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
