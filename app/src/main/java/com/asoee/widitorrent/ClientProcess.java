@@ -24,10 +24,7 @@ import com.peak.salut.Salut;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +99,7 @@ public class ClientProcess implements ProcessManager {
         queue = Volley.newRequestQueue(MainActivity.activity);
         final Long time = System.currentTimeMillis();
         InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.GET,
-                "http://ipv4.download.thinkbroadband.com/5MB.zip",
+                "http://ipv4.download.thinkbroadband.com/1MB.zip",
                 new Response.Listener<byte[]>() {
                     @Override
                     public void onResponse(byte[] response) {
@@ -111,7 +108,7 @@ public class ClientProcess implements ProcessManager {
                             if (response != null) {
                                 ConnectionSpeed speed = new ConnectionSpeed();
                                 speed.name = network.thisDevice.readableName;
-                                speed.speed = (5 * 8) / ((System.currentTimeMillis() - time) / 1000);
+                                speed.speed = 8 / ((System.currentTimeMillis() - time) / 1000);
                                 network.sendToHost(speed, new SalutCallback() {
                                     @Override
                                     public void call() {
