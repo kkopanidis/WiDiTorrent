@@ -175,7 +175,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
             }
             dev++;
             if (dev >= speeds.size()) {
-                dev = 0;
+                dev = 0; //-->WUT?
             }
         }
     }

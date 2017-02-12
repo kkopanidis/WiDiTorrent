@@ -39,7 +39,7 @@ public class ClientProcess implements ProcessManager {
     RequestQueue queue;
     List<String> have = new ArrayList<>();
     static RequestList list;
-    File mine;
+    //File mine;
     Map<String, String> map = new HashMap<>();
 
     @Override
@@ -87,9 +87,10 @@ public class ClientProcess implements ProcessManager {
             } else if (newMessage instanceof Map) {
                 //TODO
                 map.putAll((Map<? extends String, ? extends String>) newMessage);
-            } else if (newMessage instanceof String) {
-                download(mine);
             }
+//            } else if (newMessage instanceof String) {
+//                download(mine);
+//            }
         }
     }
 
@@ -154,6 +155,12 @@ public class ClientProcess implements ProcessManager {
                             have.add(file.url);
                             Commons.writeFile(response, file.url + "_" + file.part);
                             forwardFile(file.url);
+
+                            //----> Diagrafei ta arxeia pou den xreiazetai...mporei na ginei kai katopin eortis auto
+                            // pi8anwn gia 8emata error handling alla emeis dn exoume edw
+                            if (!FileList.want.contains(file.url)) {
+                                MainActivity.activity.getApplicationContext().deleteFile(file.url + "_" + file.part);
+                            }
 
                         }
                     }
