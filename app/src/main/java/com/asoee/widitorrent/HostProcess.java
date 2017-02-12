@@ -31,6 +31,7 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
     List<ConnectionSpeed> speeds = new ArrayList<>();
     Map<String, SalutDevice> deviceMap = new HashMap<>();
     List<String> have = new ArrayList<>();
+    Map<String, Integer> fileStatus = new HashMap<>();
     private Salut network;
 
     {
@@ -64,6 +65,13 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
             } else if (newMessage instanceof RawData) {
                 Looper.prepare();
                 Toast.makeText(FileList.fileList, "File data received", Toast.LENGTH_SHORT).show();
+                if (fileStatus.get(((RawData) newMessage).url) == null) {
+                    fileStatus.put(((RawData) newMessage).url, 1);
+                } else {
+                    fileStatus.put(((RawData) newMessage).url,
+                            fileStatus.get(((RawData) newMessage).url) + 1);
+                }
+
                 network.sendToAllDevices(newMessage, new SalutCallback() {
                     @Override
                     public void call() {
@@ -77,14 +85,27 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
                 have.add(((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
                 Commons.writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
                         ((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
-                if(FileManager.handleParts(((RawData) newMessage).url, deviceList.size(), MainActivity.activity)){
+                if (FileManager.handleParts(((RawData) newMessage).url, deviceList.size(), MainActivity.activity)) {
                     have.add(((RawData) newMessage).url);
                 }
             } else if (newMessage instanceof ConnectionSpeed) {
                 speeds.add((ConnectionSpeed) newMessage);
                 FileList.refreshDeviceList(deviceList, speeds);
             }
-
+            int done = 0;
+            for (String file : fileStatus.keySet()) {
+                if (fileStatus.get(file) == deviceList.size()) {
+                    done++;
+                }
+            }
+            if (done == FileList.list_adapter.getList().fileList.size()) {
+                network.sendToAllDevices("DONE", new SalutCallback() {
+                    @Override
+                    public void call() {
+                        //TODO later
+                    }
+                });
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -182,11 +203,6 @@ public class HostProcess implements ProcessManager, SalutDeviceCallback {
 
     public void initiateProc() {
         startDownload();
-        network.sendToAllDevices("GO", new SalutCallback() {
-            @Override
-            public void call() {
-                //TODO later
-            }
-        });
+
     }
 }

@@ -82,11 +82,8 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
     }
 
     public void onReady(View v) {
-        if (MainActivity.network.isRunningAsHost) { //TODO maybe not needed ---> vlepe line 59
-            ((HostProcess) MainActivity.mManager).initiateProc();
-        } else {
 
-        }
+        ((HostProcess) MainActivity.mManager).initiateProc();
     }
 
     @Override

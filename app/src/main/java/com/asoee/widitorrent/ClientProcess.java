@@ -58,8 +58,8 @@ public class ClientProcess implements ProcessManager {
             else if (((String) data).contains("url"))
                 newMessage =
                         LoganSquare.parse((String) data, File.class);
-            else if (((String) data).contains("GO"))
-                newMessage = "GO";
+            else if (((String) data).contains("DONE"))
+                newMessage = "DONE";
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -78,18 +78,17 @@ public class ClientProcess implements ProcessManager {
                     have.add(((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
                     Commons.writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
                             ((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
-                    if(FileManager.handleParts(((RawData) newMessage).url, map.size(), MainActivity.activity)){
+                    if (FileManager.handleParts(((RawData) newMessage).url, map.size(), MainActivity.activity)) {
                         have.add(((RawData) newMessage).url);
                     }
                 }
 
             } else if (newMessage instanceof Map) {
-                //TODO
+
                 map.putAll((Map<? extends String, ? extends String>) newMessage);
+            } else if (newMessage instanceof String) {
+                FileList.fileList.onBackPressed();
             }
-//            } else if (newMessage instanceof String) {
-//                download(mine);
-//            }
         }
     }
 
@@ -156,8 +155,6 @@ public class ClientProcess implements ProcessManager {
                             Commons.writeFile(response, file.url + "_" + file.part);
                             forwardFile(file.url);
 
-                            //----> Diagrafei ta arxeia pou den xreiazetai...mporei na ginei kai katopin eortis auto
-                            // pi8anwn gia 8emata error handling alla emeis dn exoume edw
                             if (!FileList.want.contains(file.url)) {
                                 MainActivity.activity.getApplicationContext().deleteFile(file.url + "_" + file.part);
                             }
@@ -173,7 +170,8 @@ public class ClientProcess implements ProcessManager {
                         error.printStackTrace();
                         Toast.makeText(FileList.fileList, "Error downloading", Toast.LENGTH_SHORT).show();
                     }
-                }, null) {
+                },
+                null) {
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
