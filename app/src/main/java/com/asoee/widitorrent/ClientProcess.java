@@ -84,7 +84,13 @@ public class ClientProcess implements ProcessManager {
 
                 map.putAll((Map<? extends String, ? extends String>) newMessage);
             } else if (newMessage instanceof String) {
-                FileList.fileList.onBackPressed();
+                FileList.fileList.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileList.fileList.onBackPressed();
+                    }
+                });
+
             }
         }
     }
@@ -150,7 +156,7 @@ public class ClientProcess implements ProcessManager {
                             Toast.makeText(FileList.fileList, "File downloaded", Toast.LENGTH_SHORT).show();
                             have.add(file.url);
                             Commons.writeFile(response, file.url + "_" + file.part);
-                            forwardFile(file.url);
+                            forwardFile(file.url + "_" + file.part);
 
                             if (!FileList.want.contains(file.url)) {
                                 MainActivity.activity.getApplicationContext()
