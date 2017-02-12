@@ -225,14 +225,14 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                     public void onClick(View v) {
                         diag.hide();
                         show_group(((EditText) diag.findViewById(R.id.file_select))
-                                .getText().toString());
+                                .getText().toString(), false);
                     }
                 });
                 diag.findViewById(R.id.button_skip).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         diag.hide();
-                        show_group(null);
+                        show_group(null, false);
                     }
                 });
                 diag.show();
@@ -269,11 +269,8 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
                         // get the input and set it as group name
                         String group_name = ((EditText) diag.findViewById(R.id.groupField)).getText().toString();
 
-                        //--> logika molis gineis host osoi kanoun discovery se vriskoun amesws
-                        // kai mporoun na sinde8oun
-
                         // this node is now host
-                        become_host();
+                        become_host(group_name);
 
                     }
                 });
@@ -288,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
         });
     }
 
-    private void become_host() {
+    private void become_host(String group_name) {
         //If the device already IS a host
         if (network.isRunningAsHost) {
             return;
@@ -296,14 +293,14 @@ public class MainActivity extends AppCompatActivity implements OnListInteraction
 
         mManager = new HostProcess();
         network.startNetworkService((HostProcess) mManager);
-        show_group(null);
+        network.thisDevice.readableName = group_name;
+        show_group(null, true);
     }
 
-    //---> mas paei sto allo activity eite otan ginomaste host (meta tin become host) eite otan
-    // ginomaste clients (meta tn connect to group). O kwdikas autos 8a mporouse na mpei kai allou...an 8es alla3e ton
-    private void show_group(String url) {
+    private void show_group(String url, boolean isHost) {
         Intent intent = new Intent(MainActivity.this, FileList.class);
         intent.putExtra("FileUrl", url);
+        intent.putExtra("isHost", isHost);
         startActivity(intent);
     }
 

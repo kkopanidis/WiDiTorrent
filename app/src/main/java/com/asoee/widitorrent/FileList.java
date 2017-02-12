@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 
 import com.asoee.widitorrent.data.ConnectionSpeed;
 import com.asoee.widitorrent.data.File;
@@ -52,6 +53,11 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
             ((ClientProcess) MainActivity.mManager).mine = tmp;
             Commons.requestFile(MainActivity.network, tmp);
         }
+
+        boolean isHost = getIntent().getBooleanExtra("isHost", false);
+        Button ready = (Button)findViewById(R.id.ready_button);
+        ready.setEnabled(isHost);
+
     }
 
 
@@ -76,7 +82,7 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
     }
 
     public void onReady(View v) {
-        if (MainActivity.network.isRunningAsHost) {
+        if (MainActivity.network.isRunningAsHost) { //TODO maybe not needed ---> vlepe line 59
             ((HostProcess) MainActivity.mManager).initiateProc();
         } else {
 

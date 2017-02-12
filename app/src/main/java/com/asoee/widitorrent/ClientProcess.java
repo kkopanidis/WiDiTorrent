@@ -16,6 +16,7 @@ import com.asoee.widitorrent.data.File;
 import com.asoee.widitorrent.data.RawData;
 import com.asoee.widitorrent.data.RequestList;
 import com.asoee.widitorrent.utils.Callback;
+import com.asoee.widitorrent.utils.FileManager;
 import com.asoee.widitorrent.utils.InputStreamVolleyRequest;
 import com.bluelinelabs.logansquare.LoganSquare;
 import com.peak.salut.Callbacks.SalutCallback;
@@ -37,7 +38,7 @@ public class ClientProcess implements ProcessManager {
     RequestQueue queue;
     List<String> have = new ArrayList<>();
     static RequestList list;
-    File mine;
+    //File mine;
     Map<String, String> map = new HashMap<>();
 
     @Override
@@ -77,74 +78,21 @@ public class ClientProcess implements ProcessManager {
                     have.add(((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
                     Commons.writeFile(Base64.decode(((RawData) newMessage).base64Data, Base64.DEFAULT),
                             ((RawData) newMessage).url + "_" + ((RawData) newMessage).part);
-                    handleParts(((RawData) newMessage).url, map.size());
+                    if(FileManager.handleParts(((RawData) newMessage).url, map.size(), MainActivity.activity)){
+                        have.add(((RawData) newMessage).url);
+                    }
                 }
 
             } else if (newMessage instanceof Map) {
                 //TODO
                 map.putAll((Map<? extends String, ? extends String>) newMessage);
-            } else if (newMessage instanceof String) {
-                download(mine);
             }
+//            } else if (newMessage instanceof String) {
+//                download(mine);
+//            }
         }
     }
 
-
-    public void handleParts(String url, int total) {
-        String[] filenames = MainActivity.activity.getFilesDir().list();
-        List<String> files = new ArrayList<>();
-
-        for (String file : filenames) {
-            if (file.contains(url)) {
-                files.add(file);
-            }
-        }
-
-        if (files.size() != total) {
-            return;
-        }
-
-        Collections.sort(files, new Comparator<String>() {
-            @Override
-            public int compare(String lhs, String rhs) {
-                int partno1 = Integer.parseInt(lhs.substring(lhs.lastIndexOf('_')));
-                int partno2 = Integer.parseInt(rhs.substring(rhs.lastIndexOf('_')));
-
-                if (partno1 > partno2) {
-                    return -1; //so as the order be descending
-                } else {
-                    return 1;
-                }
-            }
-        });
-
-        List<Byte> bytes = new ArrayList<>();
-        int c;
-
-        for (String file : files) {
-
-            try (InputStream inputStream = MainActivity.activity
-                    .openFileInput(file)) {
-
-                while ((c = inputStream.read()) != -1) {
-                    bytes.add((byte) c);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-
-                MainActivity.activity.getApplicationContext().deleteFile(file);
-            }
-
-        }
-        byte[] array = new byte[bytes.size()];
-        int i = 0;
-        for (Byte b : bytes) {
-            array[i++] = b;
-        }
-        Commons.writeFile(array, url);
-        have.add(url);
-    }
 
     @Override
     public void respond(Object data) {
@@ -207,6 +155,12 @@ public class ClientProcess implements ProcessManager {
                             have.add(file.url);
                             Commons.writeFile(response, file.url + "_" + file.part);
                             forwardFile(file.url);
+
+                            //----> Diagrafei ta arxeia pou den xreiazetai...mporei na ginei kai katopin eortis auto
+                            // pi8anwn gia 8emata error handling alla emeis dn exoume edw
+                            if (!FileList.want.contains(file.url)) {
+                                MainActivity.activity.getApplicationContext().deleteFile(file.url + "_" + file.part);
+                            }
 
                         }
                     }
