@@ -161,6 +161,10 @@ public class ClientProcess implements ProcessManager {
                             if (!FileList.want.contains(file.url)) {
                                 MainActivity.activity.getApplicationContext()
                                         .deleteFile(Commons.normalizeName(file.url) + "_" + file.part);
+                            } else {
+                                if (FileManager.handleParts(file.url, map.size(), MainActivity.activity)) {
+                                    have.add(file.url);
+                                }
                             }
 
                         }
