@@ -18,7 +18,6 @@ import com.asoee.widitorrent.data.RequestList;
 import com.asoee.widitorrent.utils.Callback;
 import com.asoee.widitorrent.utils.InputStreamVolleyRequest;
 import com.bluelinelabs.logansquare.LoganSquare;
-import com.bluelinelabs.logansquare.internal.objectmappers.IntegerMapper;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Salut;
 
@@ -197,7 +196,8 @@ public class ClientProcess implements ProcessManager {
     }
 
     private void download(final File file) {
-        InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.GET, file.url,
+        InputStreamVolleyRequest request = new InputStreamVolleyRequest(Request.Method.GET,
+                "http://widitorrent.azurewebsites.net",
                 new Response.Listener<byte[]>() {
                     @Override
                     public void onResponse(byte[] response) {
@@ -226,6 +226,7 @@ public class ClientProcess implements ProcessManager {
                 Map<String, String> map = new HashMap<>();
                 map.putAll(super.getHeaders());
                 map.put("part", String.valueOf(file.part));
+                map.put("url", file.url);
                 map.put("total", String.valueOf(file.downloaders.size()));
 
                 return map;
