@@ -50,12 +50,12 @@ public class FileList extends AppCompatActivity implements OnListInteractionList
             tmp.removal = false;
             tmp.downloaders = new ArrayList<>();
             tmp.downloaders.add(MainActivity.network.thisDevice.readableName);
-            ((ClientProcess) MainActivity.mManager).mine = tmp;
+            want.add(tmp);
             Commons.requestFile(MainActivity.network, tmp);
         }
 
         boolean isHost = getIntent().getBooleanExtra("isHost", false);
-        Button ready = (Button)findViewById(R.id.ready_button);
+        Button ready = (Button) findViewById(R.id.ready_button);
         ready.setEnabled(isHost);
 
     }
